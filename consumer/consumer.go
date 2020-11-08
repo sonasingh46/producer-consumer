@@ -130,7 +130,13 @@ func (wc *WidgetConsumer) Consume(wg *sync.WaitGroup) {
 			wc.store = make([]widget.Widget, 0, wc.storeCapacity)
 			timeToSleep := random.GetRandomNumberInRange(1, 5)
 			time.Sleep(time.Duration(timeToSleep) * time.Second)
+			// ToDo: think about avoiding following condition and merge with above
+			// same condition.
+			if wc.CycleCount == wc.CycleCountThreshold{
+				continue
+			}
 		}
+
 		// Find how many widgets to consume
 		widgetsToConsume := random.GetRandomNumberInRange(1, 3)
 		// If widgets to consume is more than consumer store size then
