@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/sonasingh46/producer-consumer/pkg/random"
 	"github.com/sonasingh46/producer-consumer/widget"
-	"sync"
 )
 
 // Producer is the interface that wraps the Producer methods.
@@ -41,53 +40,49 @@ type WidgetProducer struct {
 	id int
 	// queue is the queue where widgets are stored.
 	queue chan widget.Widget
-	// lock to synchronise access.
-	lock sync.Mutex
 }
 
 // NewWidgetProducer returns a new widget producer instance
-func NewWidgetProducer(id,bufferSize int)Producer{
+func NewWidgetProducer(id, bufferSize int) Producer {
 	return &WidgetProducer{
-		id :id,
-		queue:make(chan widget.Widget,bufferSize),
+		id:    id,
+		queue: make(chan widget.Widget, bufferSize),
 	}
 }
 
 // Produce produces widgets.
-func (wp *WidgetProducer)Produce()  {
+func (wp *WidgetProducer) Produce() {
 	for {
-		widgetsToProduce:=random.GetRandomNumberInRange(1,3)
-		temp:=widgetsToProduce
-		for widgetsToProduce!=0{
+		widgetsToProduce := random.GetRandomNumberInRange(1, 3)
+		temp := widgetsToProduce
+		for widgetsToProduce != 0 {
 			select {
-			case wp.queue <- widget.NewWidget() :
+			case wp.queue <- widget.NewWidget():
 				widgetsToProduce--
 			}
 		}
-		fmt.Printf("[Producer %d]: %d Widgets prodcued\n",wp.id,temp)
+		fmt.Printf("[Producer %d]: %d Widgets prodcued\n", wp.id, temp)
 	}
 }
 
 // Extract extracts widget from a producer.
 // This method should be called by a consumer that intends to
 // consume form this producer.
-func (wp *WidgetProducer)Extract(widgetCount int) []widget.Widget {
-	wp.lock.Lock()
-	widget:=make([]widget.Widget,0)
-	for widgetCount!=0{
+func (wp *WidgetProducer) Extract(widgetCount int) []widget.Widget {
+	widget := make([]widget.Widget, 0)
+	for widgetCount != 0 {
 		select {
-		case wg:= <-wp.queue:
-			widget = append(widget,wg)
+		case wg := <-wp.queue:
+			widget = append(widget, wg)
 			widgetCount--
 		}
 	}
-	defer wp.lock.Unlock()
 	return widget
 }
 
 // Extract extracts widget from a producer.
 // This method should be called by a consumer that intends to
 // consume form this producer.
-func (wp *WidgetProducer)GetID() int {
+func (wp *WidgetProducer) GetID() int {
 	return wp.id
 }
